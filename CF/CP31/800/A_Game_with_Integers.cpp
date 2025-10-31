@@ -20,13 +20,15 @@ int32_t main()
     set_double_precision;
 
     int t = 1;
-    // cin >> t;
+    cin >> t;
     while (t--)
     {
         int n;
         cin>>n;
-        if(n == 1)
-            cout<<"Second"
+        if(n % 3 == 0)
+            cout<<"Second"<<endl;
+        else    
+            cout<<"First"<<endl;
     }
     return 0;
 }
