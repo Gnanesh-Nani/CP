@@ -1,0 +1,25 @@
+# CP helper/prob files
+*.cph
+.cph/
+*.prob
+
+# Compiled binaries
+*.out
+*.exe
+*.o
+*.obj
+
+# Backup / temporary files
+*~
+*.tmp
+*.swp
+
+# VSCode settings
+.vscode/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Ignore core dumps
+core
