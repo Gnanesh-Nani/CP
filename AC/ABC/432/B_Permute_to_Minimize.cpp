@@ -23,13 +23,17 @@ int32_t main()
     // cin >> t;
     while (t--)
     {
-       int n;
-       int cnt =0;
-       cin>>n;
-       for(int i = 5; i <= n;i= i*5){
-       	cnt += (n/i);
-       }
-       cout<<cnt<<endl;
+        string str;
+        cin>>str;
+        int n = str.length();
+        sort(str.begin(),str.end());
+        for(int i = 0; i < n;i++){
+            if(str[i]!='0'){
+                swap(str[0],str[i]);
+                break;
+            }
+        }
+        cout<<str<<endl;
     }
     return 0;
 }

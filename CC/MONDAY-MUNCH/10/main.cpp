@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+//constants and shits
 #define DOUBLE_PRECISION 20
 
 #define int long long
@@ -20,16 +21,10 @@ int32_t main()
     set_double_precision;
 
     int t = 1;
-    // cin >> t;
+    cin >> t;
     while (t--)
     {
-       int n;
-       int cnt =0;
-       cin>>n;
-       for(int i = 5; i <= n;i= i*5){
-       	cnt += (n/i);
-       }
-       cout<<cnt<<endl;
+        solve();
     }
     return 0;
 }

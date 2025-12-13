@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+//constants and shits
 #define DOUBLE_PRECISION 20
 
 #define int long long
@@ -23,13 +24,10 @@ int32_t main()
     // cin >> t;
     while (t--)
     {
-       int n;
-       int cnt =0;
-       cin>>n;
-       for(int i = 5; i <= n;i= i*5){
-       	cnt += (n/i);
-       }
-       cout<<cnt<<endl;
+        vector<int> arr(3,0);
+        cin>>arr[0]>>arr[1]>>arr[2];
+        sort(arr.rbegin(),arr.rend());
+        cout<<arr[0]<<arr[1]<<arr[2]<<endl;
     }
     return 0;
 }
