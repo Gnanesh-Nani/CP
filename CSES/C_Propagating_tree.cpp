@@ -41,66 +41,128 @@ void compute_seive() {
     }
 }
 
-// =========================== Segment Tree =============================
-// default range sum
+// SG Tree Lazy propagation
 class SGTree {
-  int n;
-  vector < int > seg;
-  public:
-    SGTree(int n, vector < int > & arr) {
-      seg.resize(4 * n, 0);
-      this -> n = n;
-      build(0, 0, n - 1, arr);
+    int n;
+    vector<int> seg, lazy;
+
+public:
+    SGTree(int n, vector<int> &arr) {
+        this->n = n;
+        seg.resize(4 * n, 0);
+        lazy.resize(4 * n, 0);
+        build(0, 0, n - 1, arr);
     }
 
-  void build(int idx, int low, int high, vector < int > & arr) {
-    if (low == high) {
-      seg[idx] = arr[low];
-      return;
+    // Build
+    void build(int idx, int low, int high, vector<int> &arr) {
+        if (low == high) {
+            seg[idx] = arr[low];
+            return;
+        }
+
+        int mid = (low + high) / 2;
+        build(2 * idx + 1, low, mid, arr);
+        build(2 * idx + 2, mid + 1, high, arr);
+
+        seg[idx] = seg[2 * idx + 1] + seg[2 * idx + 2];
     }
 
-    int mid = (low + high) / 2;
-    int left = idx * 2 + 1;
-    int right = idx * 2 + 2;
+    // Push lazy updates
+    void push(int idx, int low, int high) {
+        if (lazy[idx] != 0) {
+            seg[idx] += (high - low + 1) * lazy[idx];
 
-    build(left, low, mid, arr);
-    build(right, mid + 1, high, arr);
+            if (low != high) {
+                lazy[2 * idx + 1] += lazy[idx];
+                lazy[2 * idx + 2] += lazy[idx];
+            }
 
-    seg[idx] = seg[left] + seg[right];
-  }
-
-  int query(int idx, int low, int high, int l, int r) {
-
-    if (l <= low && high <= r)
-      return seg[idx];
-    if (high < l || r < low)
-      return 0;
-
-    int mid = (low + high) / 2;
-    int left = idx * 2 + 1;
-    int right = idx * 2 + 2;
-
-    return query(left, low, mid, l, r) + query(right, mid + 1, high, l, r);
-  }
-
-  // point update
-  void update(int idx, int low, int high, int i) {
-    if (low == high) {
-      seg[idx]++;
-      return;
+            lazy[idx] = 0;
+        }
     }
 
-    int mid = (low + high) / 2;
+    // Range Update: add val to [l, r]
+    void rangeUpdate(int idx, int low, int high, int l, int r, int val) {
+        push(idx, low, high);
 
-    if (i <= mid)
-      update(idx * 2 + 1, low, mid, i);
-    else
-      update(idx * 2 + 2, mid + 1, high, i);
+        // No overlap
+        if (high < l || r < low) return;
 
-    seg[idx] = seg[idx * 2 + 1] + seg[idx * 2 + 2];
-  }
+        // Complete overlap
+        if (l <= low && high <= r) {
+            lazy[idx] += val;
+            push(idx, low, high);
+            return;
+        }
+
+        int mid = (low + high) / 2;
+
+        rangeUpdate(2 * idx + 1, low, mid, l, r, val);
+        rangeUpdate(2 * idx + 2, mid + 1, high, l, r, val);
+
+        seg[idx] = seg[2 * idx + 1] + seg[2 * idx + 2];
+    }
+
+    // Range Query
+    int query(int idx, int low, int high, int l, int r) {
+        push(idx, low, high);
+
+        // No overlap
+        if (high < l || r < low) return 0;
+
+        // Complete overlap
+        if (l <= low && high <= r) return seg[idx];
+
+        int mid = (low + high) / 2;
+
+        return query(2 * idx + 1, low, mid, l, r) +
+               query(2 * idx + 2, mid + 1, high, l, r);
+    }
+
+    // Point Update: increment index i by 1
+    void pointUpdate(int idx, int low, int high, int i) {
+        push(idx, low, high);
+
+        if (low == high) {
+            seg[idx] += 1;
+            return;
+        }
+
+        int mid = (low + high) / 2;
+
+        if (i <= mid)
+            pointUpdate(2 * idx + 1, low, mid, i);
+        else
+            pointUpdate(2 * idx + 2, mid + 1, high, i);
+
+        seg[idx] = seg[2 * idx + 1] + seg[2 * idx + 2];
+    }
 };
 
+// Generate Euler tour
+int tim = 1;
+vector<int> eulerTour = {-1};
+vector<int> inTime(2e5+1);
+vector<int> outTime(2e5+1);
+vector<int> height(2e5+1);
+vector<int> value(2e5+1);
+
+void tour(int node,int parent,int h, vector<vector<int>> &adj) {
+  height[node] = h;
+  int val = (h & 1)? value[node] : -1 * value[node];
+  eulerTour.push_back(val);
+  inTime[node] = tim;
+  tim++;
+  for(int i: adj[node]) {
+    if(i == parent)
+      continue;
+    tour(i,node,h+1,adj);
+  }
+  eulerTour.push_back(val);
+  outTime[node] = tim;
+  tim++;
+}
 
 int32_t main()
 {
@@ -112,6 +174,55 @@ int32_t main()
     //  cin >> t;
     while (t--)
     {
+      int n,m;
+      cin >> n >> m;
+
+      for(int i = 1; i <= n; i++) {
+        cin >> value[i];
+      }
+
+      vector<vector<int>> adj(n+1);
+      for(int i = 0; i < n-1;i++) {
+        int u,v;
+        cin >> u >> v;
+        // cout << u << " : " << v << endl;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+      }
+
+      tour(1,-1,1,adj);
+
+      // for(int i: eulerTour)
+      //   cout << i << " ";
+      // cout << endl;
+      
+      int e = eulerTour.size();
+      SGTree ST(e,eulerTour);
+
+      for(int i = 0; i < m; i++) {
+        int type;
+        cin >> type;
+        if(type == 1) {
+          int x,val;
+          cin >> x >> val;
+          if(height[x] % 2) {
+            ST.rangeUpdate(0,0,e-1,inTime[x],outTime[x],val);
+          } else {
+            ST.rangeUpdate(0,0,e-1,inTime[x],outTime[x],-1*val);
+          }
+
+        } else {
+          int ans;
+          int x;
+          cin >> x;
+          if(height[x] % 2) {
+            ans = ST.query(0,0,e-1,inTime[x],inTime[x]);
+          } else {
+            ans = -1 * ST.query(0,0,e-1,inTime[x],inTime[x]);
+          }
+          cout << ans << endl;
+        }
+      }
 
     }
     return 0;
